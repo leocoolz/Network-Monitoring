@@ -1,0 +1,581 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#07111f" />
+    <title>Netra NOC - Network Monitoring Center</title>
+    <script type="module" crossorigin src="/assets/main-auk8AuaX.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/main-_cJR2400.css" />
+  </head>
+  <body class="auth-pending">
+    <svg class="svg-sprite" aria-hidden="true">
+      <symbol id="i-grid" viewBox="0 0 24 24">
+        <rect x="3" y="3" width="7" height="7" rx="2" />
+        <rect x="14" y="3" width="7" height="7" rx="2" />
+        <rect x="3" y="14" width="7" height="7" rx="2" />
+        <rect x="14" y="14" width="7" height="7" rx="2" />
+      </symbol>
+      <symbol id="i-network" viewBox="0 0 24 24">
+        <rect x="9" y="2" width="6" height="6" rx="2" />
+        <rect x="2" y="16" width="6" height="6" rx="2" />
+        <rect x="16" y="16" width="6" height="6" rx="2" />
+        <path d="M12 8v4M5 16v-4h14v4" />
+      </symbol>
+      <symbol id="i-devices" viewBox="0 0 24 24">
+        <rect x="3" y="4" width="18" height="12" rx="2" />
+        <path d="M8 20h8M12 16v4" />
+      </symbol>
+      <symbol id="i-traffic" viewBox="0 0 24 24"><path d="M4 18V9M10 18V5M16 18v-7M22 18V3" /></symbol>
+      <symbol id="i-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" /></symbol>
+      <symbol id="i-report" viewBox="0 0 24 24">
+        <path d="M4 19V5a2 2 0 0 1 2-2h9l5 5v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2Z" />
+        <path d="M14 3v6h6M8 13h8M8 17h5" />
+      </symbol>
+      <symbol id="i-settings" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="3" />
+        <path
+          d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3A1.7 1.7 0 0 0 10 3V2.8h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"
+        />
+      </symbol>
+      <symbol id="i-search" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="7" />
+        <path d="m20 20-4-4" />
+      </symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></symbol>
+      <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m0 0 5-5m-5 5-5-5M5 21h14" /></symbol>
+      <symbol id="i-chevron" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></symbol>
+      <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18" /></symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16" /></symbol>
+      <symbol id="i-refresh" viewBox="0 0 24 24">
+        <path d="M20 6v5h-5M4 18v-5h5" />
+        <path d="M18.5 9A7 7 0 0 0 6 6.5L4 11m16 2-2 4.5A7 7 0 0 1 5.5 15" />
+      </symbol>
+      <symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="m6 15 6-6 6 6" /></symbol>
+      <symbol id="i-arrow-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 7v5l3 2" />
+      </symbol>
+    </svg>
+
+    <section class="login-screen" id="loginScreen" aria-label="Login Netra NOC">
+      <div class="login-ambient ambient-one"></div>
+      <div class="login-ambient ambient-two"></div>
+      <div class="login-layout">
+        <div class="login-intro">
+          <div class="login-brand">
+            <div class="brand-mark large"><span></span><span></span><span></span></div>
+            <div><strong>NETRA</strong><small>NETWORK CONTROL</small></div>
+          </div>
+          <div class="login-copy">
+            <p class="eyebrow"><span></span> UNIFIED NETWORK OBSERVABILITY</p>
+            <h1>Seluruh jaringan.<br /><em>Satu pusat kendali.</em></h1>
+            <p>Pantau kesehatan infrastruktur, koneksi, trafik, dan insiden secara real-time dari satu workspace yang aman.</p>
+          </div>
+          <div class="login-features">
+            <div>
+              <span class="feature-icon">01</span><strong>Live Infrastructure</strong><small>Router, firewall, switch, WiFi, server, NVR, dan CCTV.</small>
+            </div>
+            <div>
+              <span class="feature-icon">02</span><strong>Traffic Intelligence</strong><small>Visibilitas LAN, WAN, internet, VPN, dan aplikasi.</small>
+            </div>
+            <div>
+              <span class="feature-icon">03</span><strong>Proactive Alerting</strong><small>Deteksi gangguan sebelum berdampak pada operasional.</small>
+            </div>
+          </div>
+          <div class="login-system">
+            <span><i></i> All monitoring services operational</span><small>Jakarta Collector / Last sync just now</small>
+          </div>
+        </div>
+
+        <div class="login-panel-wrap">
+          <div class="login-panel">
+            <div class="login-panel-head">
+              <span class="secure-badge">SECURE ACCESS</span>
+              <h2>Selamat datang kembali</h2>
+              <p>Masuk untuk mengakses Network Operations Center.</p>
+            </div>
+            <form id="loginForm" novalidate>
+              <label class="login-field"
+                ><span>Username</span>
+                <div>
+                  <svg><use href="#i-devices" /></svg
+                  ><input id="loginUsername" name="username" autocomplete="username" required placeholder="Masukkan username" />
+                </div>
+                <small class="field-error"></small
+              ></label>
+              <label class="login-field"
+                ><span>Password</span>
+                <div>
+                  <svg><use href="#i-settings" /></svg
+                  ><input id="loginPassword" name="password" type="password" autocomplete="current-password" required placeholder="Masukkan password" /><button
+                    type="button"
+                    class="password-toggle"
+                    id="passwordToggle"
+                  >
+                    SHOW
+                  </button>
+                </div>
+                <small class="field-error"></small
+              ></label>
+              <div class="login-options">
+                <label class="remember-control"><input type="checkbox" id="rememberSession" checked /><span></span>Ingat sesi saya</label
+                ><button type="button" class="forgot-button" id="forgotButton">Lupa password?</button>
+              </div>
+              <div class="login-error" id="loginError" role="alert">
+                <span>!</span>
+                <p><strong>Login gagal</strong><small>Username atau password tidak sesuai.</small></p>
+              </div>
+              <button class="login-submit" id="loginSubmit" type="submit">
+                <span>Masuk ke Dashboard</span><svg><use href="#i-chevron" /></svg>
+              </button>
+            </form>
+            <div class="demo-access">
+              <span>AUTHORIZED ACCESS ONLY</span>
+              <p>Gunakan akun yang diberikan oleh Network Administrator.</p>
+            </div>
+            <div class="login-security">
+              <svg><use href="#i-settings" /></svg><span>Protected session</span><i></i><span>Role-based access</span><i></i><span>Audit ready</span>
+            </div>
+          </div>
+          <p class="login-help">Netra NOC v2.5.0 &nbsp; | &nbsp; Butuh bantuan? Hubungi Network Administrator</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="app-shell" id="appShell">
+      <aside class="sidebar" id="sidebar">
+        <div class="brand">
+          <div class="brand-mark"><span></span><span></span><span></span></div>
+          <div><strong>NETRA</strong><small>NETWORK CONTROL</small></div>
+        </div>
+
+        <nav class="sidebar-nav" aria-label="Navigasi utama">
+          <p class="nav-label">MONITORING</p>
+          <button class="nav-item active" data-section="overview">
+            <svg><use href="#i-grid" /></svg><span>Overview</span>
+          </button>
+          <button class="nav-item" data-section="topology">
+            <svg><use href="#i-network" /></svg><span>Topologi</span>
+          </button>
+          <button class="nav-item" data-section="devices">
+            <svg><use href="#i-devices" /></svg><span>Perangkat</span><b id="navDeviceCount">0</b>
+          </button>
+          <button class="nav-item" data-section="traffic">
+            <svg><use href="#i-traffic" /></svg><span>Traffic</span>
+          </button>
+          <button class="nav-item" data-section="alerts">
+            <svg><use href="#i-bell" /></svg><span>Alerts</span><b class="danger" id="navAlertCount">0</b>
+          </button>
+
+          <p class="nav-label second">MANAGEMENT</p>
+          <button class="nav-item">
+            <svg><use href="#i-report" /></svg><span>Reports</span>
+          </button>
+          <button class="nav-item">
+            <svg><use href="#i-settings" /></svg><span>Settings</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-foot">
+          <div class="collector-card">
+            <div class="collector-icon"><span></span></div>
+            <div>
+              <strong>Collector Jakarta</strong><small><i></i> Online & synced</small>
+            </div>
+            <svg><use href="#i-chevron" /></svg>
+          </div>
+          <div class="version">Netra NOC v2.5.0</div>
+        </div>
+      </aside>
+
+      <button class="sidebar-overlay" id="sidebarOverlay" aria-label="Tutup menu"></button>
+
+      <main class="main-content">
+        <header class="topbar">
+          <button class="icon-button menu-button" id="menuButton" aria-label="Buka menu">
+            <svg><use href="#i-menu" /></svg>
+          </button>
+          <div class="breadcrumbs">
+            <span>Network Operations</span><svg><use href="#i-chevron" /></svg><strong>Overview</strong>
+          </div>
+          <div class="top-actions">
+            <label class="global-search">
+              <svg><use href="#i-search" /></svg>
+              <input type="search" id="globalSearch" placeholder="Cari perangkat, IP, lokasi..." />
+              <kbd>Ctrl K</kbd>
+            </label>
+            <div class="live-indicator"><i></i> LIVE</div>
+            <button class="icon-button notification-button" id="notificationButton" aria-label="Notifikasi">
+              <svg><use href="#i-bell" /></svg><span id="notificationCount">0</span>
+            </button>
+            <button class="profile-button" id="profileButton" aria-label="Menu profil">
+              <span>AR</span>
+              <div><strong id="profileName">Arleeo</strong><small>Administrator</small></div>
+              <svg><use href="#i-chevron" /></svg>
+            </button>
+          </div>
+        </header>
+
+        <div class="dashboard">
+          <section class="page-heading" id="overview">
+            <div>
+              <p class="eyebrow"><span></span> SYSTEM OPERATIONAL</p>
+              <h1>Network Overview</h1>
+              <p>Pantau seluruh infrastruktur jaringan secara real-time dari satu pusat kendali.</p>
+            </div>
+            <div class="heading-actions">
+              <button class="button secondary" id="exportButton">
+                <svg><use href="#i-download" /></svg>Export Report
+              </button>
+              <button class="button primary" id="addDeviceButton">
+                <svg><use href="#i-plus" /></svg>Tambah Perangkat
+              </button>
+            </div>
+          </section>
+
+          <section class="kpi-grid" aria-label="Ringkasan jaringan">
+            <article class="kpi-card health-card">
+              <div class="kpi-head">
+                <span class="kpi-icon violet"
+                  ><svg><use href="#i-network" /></svg></span
+                ><span class="trend up"
+                  ><svg><use href="#i-arrow-up" /></svg> 1.2%</span
+                >
+              </div>
+              <p>Network Health</p>
+              <div class="kpi-value"><strong id="healthValue">96.8</strong><span>%</span></div>
+              <div class="health-bar"><span style="width: 96.8%"></span></div>
+              <small><span id="healthLabel">Calculating</span><b id="healthDetail">Waiting for collector data</b></small>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-head">
+                <span class="kpi-icon cyan"
+                  ><svg><use href="#i-devices" /></svg></span
+                ><span class="subtle" id="offlineDeviceValue">0 offline</span>
+              </div>
+              <p>Active Devices</p>
+              <div class="kpi-value"><strong id="activeDeviceValue">0</strong><span id="totalDeviceValue">/ 0</span></div>
+              <div class="mini-bars" id="deviceMiniBars" aria-hidden="true"></div>
+              <small><b>96.9%</b> availability</small>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-head">
+                <span class="kpi-icon red"
+                  ><svg><use href="#i-bell" /></svg></span
+                ><span class="trend down"
+                  ><svg><use href="#i-arrow-down" /></svg> <span id="warningAlertValue">0</span></span
+                >
+              </div>
+              <p>Critical Alerts</p>
+              <div class="kpi-value"><strong id="criticalAlertValue">0</strong><span>active</span></div>
+              <div class="alert-dots"><i></i><i></i><i></i><i class="muted"></i><i class="muted"></i></div>
+              <small><span id="acknowledgedAlertValue">0 acknowledged</span><b id="newAlertValue">0 new</b></small>
+            </article>
+            <article class="kpi-card">
+              <div class="kpi-head">
+                <span class="kpi-icon green"
+                  ><svg><use href="#i-traffic" /></svg></span
+                ><span class="trend up"
+                  ><svg><use href="#i-arrow-up" /></svg> 8.4%</span
+                >
+              </div>
+              <p>Internet Utilization</p>
+              <div class="kpi-value"><strong id="utilValue">68.4</strong><span>%</span></div>
+              <div class="split-stat">
+                <span><i class="download"></i> DL <b id="downloadMini">684 Mbps</b></span
+                ><span><i class="upload"></i> UL <b id="uploadMini">182 Mbps</b></span>
+              </div>
+              <small>of 1 Gbps capacity</small>
+            </article>
+          </section>
+
+          <section class="content-grid traffic-section" id="traffic">
+            <article class="panel traffic-panel">
+              <div class="panel-header">
+                <div>
+                  <h2>Network Traffic</h2>
+                  <p id="trafficDescription">Aggregated throughput seluruh koneksi</p>
+                </div>
+                <div class="traffic-controls">
+                  <select class="traffic-scope" id="trafficScope" aria-label="Pilih segmen traffic">
+                    <option value="all">All Traffic</option>
+                    <option value="internet">Internet</option>
+                    <option value="wan">WAN</option>
+                    <option value="lan">LAN</option>
+                  </select>
+                  <div class="range-tabs" role="tablist">
+                    <button class="active" data-range="live">Live</button><button data-range="24h">24H</button><button data-range="7d">7D</button
+                    ><button data-range="30d">30D</button>
+                  </div>
+                </div>
+              </div>
+              <div class="traffic-summary">
+                <div>
+                  <span><i class="legend-dot cyan"></i>Download</span><strong id="downloadValue">684.2 <small>Mbps</small></strong
+                  ><em>+12.4%</em>
+                </div>
+                <div>
+                  <span><i class="legend-dot violet"></i>Upload</span><strong id="uploadValue">182.6 <small>Mbps</small></strong
+                  ><em>+5.8%</em>
+                </div>
+                <div class="traffic-capacity"><span>Peak today</span><strong id="trafficPeakValue">892.4 Mbps</strong><small>at 10:42 AM</small></div>
+              </div>
+              <div class="chart-wrap">
+                <canvas id="trafficChart" aria-label="Grafik traffic download dan upload"></canvas>
+                <div class="chart-tooltip" id="chartTooltip"></div>
+              </div>
+            </article>
+
+            <article class="panel availability-panel">
+              <div class="panel-header">
+                <div>
+                  <h2>Link Availability</h2>
+                  <p>Status koneksi utama</p>
+                </div>
+                <button class="more-button">...</button>
+              </div>
+              <div class="availability-score">
+                <div class="gauge" id="availabilityGauge" style="--value: 0">
+                  <div><strong id="availabilityGaugeValue">0%</strong><span>Availability</span></div>
+                </div>
+                <div><span>Current inventory</span><strong id="availabilityIssueValue">0</strong><small>Devices need attention</small></div>
+              </div>
+              <div class="link-list" id="infrastructureLinks"></div>
+            </article>
+          </section>
+
+          <section class="content-grid lower-grid">
+            <article class="panel topology-panel" id="topology">
+              <div class="panel-header">
+                <div>
+                  <h2>Network Topology</h2>
+                  <p>Live map dan status antar perangkat</p>
+                </div>
+                <button class="text-button">
+                  Lihat Topologi <svg><use href="#i-chevron" /></svg>
+                </button>
+              </div>
+              <div class="topology-canvas" id="topologyCanvas">
+                <svg class="topology-lines" viewBox="0 0 800 235" preserveAspectRatio="none" aria-hidden="true">
+                  <path class="flow-line internet" d="M86 115 H178" />
+                  <path class="flow-line" d="M258 115 H335" />
+                  <path class="flow-line" d="M415 115 H492" />
+                  <path class="flow-line" d="M572 115 H650" />
+                  <path class="branch-line" d="M375 145 V195 H685 V145" />
+                  <circle class="packet p1" r="3"><animateMotion dur="2.8s" repeatCount="indefinite" path="M86 115 H178" /></circle>
+                  <circle class="packet p2" r="3"><animateMotion dur="3.5s" repeatCount="indefinite" path="M258 115 H335" /></circle>
+                  <circle class="packet p1" r="3"><animateMotion dur="2.2s" repeatCount="indefinite" path="M415 115 H492" /></circle>
+                  <circle class="packet p2" r="3"><animateMotion dur="4s" repeatCount="indefinite" path="M572 115 H650" /></circle>
+                </svg>
+                <button class="topology-node cloud" style="--x: 7%; --y: 49%" data-device="Internet Primary">
+                  <span class="node-icon">WWW</span><strong>Internet</strong><small><i></i> 866 Mbps</small>
+                </button>
+                <button class="topology-node" style="--x: 27%; --y: 49%" data-device="FortiGate 100F">
+                  <span class="node-icon firewall">FW</span><strong>Firewall</strong><small><i></i> FortiGate 100F</small>
+                </button>
+                <button class="topology-node" style="--x: 47%; --y: 49%" data-device="CCR-Core-01">
+                  <span class="node-icon router">RT</span><strong>Core Router</strong><small><i></i> CCR-01</small>
+                </button>
+                <button class="topology-node" style="--x: 67%; --y: 49%" data-device="SW-Core-01">
+                  <span class="node-icon switch">SW</span><strong>Core Switch</strong><small><i></i> 48 ports</small>
+                </button>
+                <button class="topology-node" style="--x: 87%; --y: 49%" data-device="Access Layer">
+                  <span class="node-icon endpoint">42</span><strong>Access Layer</strong><small><i class="warning"></i> 1 warning</small>
+                </button>
+              </div>
+            </article>
+
+            <article class="panel distribution-panel">
+              <div class="panel-header">
+                <div>
+                  <h2>Device Distribution</h2>
+                  <p id="distributionSubtitle">0 total managed devices</p>
+                </div>
+                <button class="more-button">...</button>
+              </div>
+              <div class="distribution-body">
+                <div class="donut-chart">
+                  <div><strong id="distributionTotal">0</strong><span>Devices</span></div>
+                </div>
+                <div class="device-legend" id="deviceLegend"></div>
+              </div>
+            </article>
+          </section>
+
+          <section class="panel alerts-panel" id="alerts">
+            <div class="panel-header">
+              <div>
+                <h2>Active Alerts</h2>
+                <p>Insiden yang memerlukan perhatian</p>
+              </div>
+              <div class="panel-actions">
+                <button class="button compact secondary" id="ackAllButton">Acknowledge all</button
+                ><button class="text-button">
+                  Lihat Semua <svg><use href="#i-chevron" /></svg>
+                </button>
+              </div>
+            </div>
+            <div class="alert-list" id="alertList"></div>
+          </section>
+
+          <section class="panel devices-panel" id="devices">
+            <div class="panel-header devices-header">
+              <div>
+                <h2>Device Inventory</h2>
+                <p>Status operasional seluruh aset jaringan</p>
+              </div>
+              <div class="device-tools">
+                <label class="table-search"
+                  ><svg><use href="#i-search" /></svg><input id="deviceSearch" type="search" placeholder="Cari perangkat..."
+                /></label>
+                <select id="typeFilter" aria-label="Filter tipe perangkat">
+                  <option value="all">Semua tipe</option>
+                </select>
+                <select id="statusFilter" aria-label="Filter status">
+                  <option value="all">Semua status</option>
+                  <option value="online">Online</option>
+                  <option value="warning">Warning</option>
+                  <option value="offline">Offline</option>
+                </select>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>DEVICE</th>
+                    <th>TYPE</th>
+                    <th>IP ADDRESS</th>
+                    <th>LOCATION</th>
+                    <th>UPTIME</th>
+                    <th>LATENCY</th>
+                    <th>STATUS</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="deviceTableBody"></tbody>
+              </table>
+              <div class="empty-state" id="emptyState">Tidak ada perangkat yang cocok dengan filter.</div>
+            </div>
+            <div class="table-footer">
+              <span id="tableCount">Menampilkan 8 dari 128 perangkat</span>
+              <div class="pagination">
+                <button disabled>&lt;</button><button class="active">1</button><button>2</button><button>3</button><button>...</button><button>16</button
+                ><button>&gt;</button>
+              </div>
+            </div>
+          </section>
+
+          <footer class="footer">
+            <span>Last synchronized <strong id="lastSync">just now</strong></span
+            ><span>SNMP Collector: <i></i> Operational</span><span>API latency: 24 ms</span>
+          </footer>
+        </div>
+      </main>
+    </div>
+
+    <aside class="device-drawer" id="deviceDrawer" aria-hidden="true">
+      <div class="drawer-head">
+        <div>
+          <span class="device-type-icon" id="drawerIcon">RT</span>
+          <div>
+            <small>DEVICE DETAILS</small>
+            <h2 id="drawerName">Device</h2>
+          </div>
+        </div>
+        <button class="icon-button" id="closeDrawer" aria-label="Tutup detail perangkat">
+          <svg><use href="#i-close" /></svg>
+        </button>
+      </div>
+      <div class="drawer-body" id="drawerBody"></div>
+    </aside>
+    <button class="drawer-overlay" id="drawerOverlay" aria-label="Tutup detail perangkat"></button>
+
+    <div class="notification-popover" id="notificationPopover">
+      <div><strong>Notifications</strong><button id="markRead">Mark all read</button></div>
+      <ul>
+        <li>
+          <i class="critical"></i><span><strong>Camera offline</strong><small>CCTV-GATE-02 - 2 min ago</small></span>
+        </li>
+        <li>
+          <i class="warning"></i><span><strong>High CPU utilization</strong><small>FortiGate 100F - 8 min ago</small></span>
+        </li>
+        <li>
+          <i class="info"></i><span><strong>Backup completed</strong><small>NVR-PRIMARY - 26 min ago</small></span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="profile-popover" id="profilePopover">
+      <div class="profile-summary">
+        <span id="profileInitials">--</span>
+        <div><strong id="profilePopoverName">User</strong><small id="profileEmail">-</small></div>
+      </div>
+      <div class="profile-role"><span>ROLE</span><strong id="profileRole">-</strong></div>
+      <button type="button" class="logout-button" id="logoutButton">
+        <svg><use href="#i-close" /></svg>Logout
+      </button>
+    </div>
+
+    <div class="modal" id="addDeviceModal" aria-hidden="true">
+      <button class="modal-backdrop" data-close-modal aria-label="Tutup modal"></button>
+      <div class="modal-card">
+        <div class="modal-head">
+          <div>
+            <small>NEW MANAGED ASSET</small>
+            <h2>Tambah Perangkat</h2>
+          </div>
+          <button class="icon-button" data-close-modal aria-label="Tutup form tambah perangkat">
+            <svg><use href="#i-close" /></svg>
+          </button>
+        </div>
+        <form id="addDeviceForm">
+          <label>Nama perangkat<input name="name" required placeholder="Contoh: SW-FLOOR-03" /></label>
+          <div class="form-row">
+            <label>Model<input name="model" required placeholder="Contoh: Cisco CBS350" /></label
+            ><label>Kode<input name="code" required maxlength="4" pattern="[A-Za-z0-9]{2,4}" placeholder="SW" /></label>
+          </div>
+          <div class="form-row">
+            <label
+              >Tipe<select name="type" required>
+                <option>Router</option>
+                <option>Firewall</option>
+                <option>Switch</option>
+                <option>Radio WiFi</option>
+                <option>Access Point</option>
+                <option>Computer</option>
+                <option>Printer</option>
+                <option>Server</option>
+                <option>NVR</option>
+                <option>CCTV</option>
+              </select></label
+            ><label>IP address<input name="ipAddress" required placeholder="192.168.1.1" /></label>
+          </div>
+          <label>Lokasi<input name="location" required placeholder="Gedung / lantai / ruangan" /></label>
+          <div class="form-row">
+            <label
+              >Metode monitoring<select name="monitoringMethod" id="monitoringMethod" required>
+                <option value="icmp">ICMP</option>
+                <option value="snmp">SNMP</option>
+                <option value="tcp">TCP Port</option>
+                <option value="api">Vendor API</option>
+                <option value="onvif">ONVIF</option>
+              </select></label
+            ><label>TCP port<input name="tcpPort" id="tcpPort" type="number" min="1" max="65535" placeholder="Opsional" /></label>
+          </div>
+          <div class="form-note">
+            <span>SECURE</span>
+            <p>Target hanya dapat ditambahkan jika IP termasuk dalam allowlist jaringan server.</p>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="button secondary" data-close-modal>Batal</button><button type="submit" class="button primary">Tambah & Monitor</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="toast-stack" id="toastStack" aria-live="polite"></div>
+  </body>
+</html>

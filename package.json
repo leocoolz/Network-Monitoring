@@ -1,0 +1,62 @@
+{
+  "name": "netra-noc",
+  "version": "2.5.0",
+  "private": true,
+  "type": "module",
+  "description": "Secure production-ready network operations center",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "build": "vite build",
+    "db:migrate": "node src/scripts/migrate.js",
+    "db:seed": "node src/scripts/seed.js",
+    "db:setup": "npm run db:migrate && npm run db:seed",
+    "test": "node --test --test-concurrency=1",
+    "test:integration": "node --test --test-concurrency=1 tests/integration.test.js",
+    "check": "eslint . && prettier --check .",
+    "format": "prettier --write .",
+    "security:audit": "npm audit --audit-level=high",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "*.{js,mjs,cjs}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,css,html}": [
+      "prettier --write"
+    ]
+  },
+  "keywords": [
+    "network-monitoring",
+    "noc",
+    "snmp",
+    "observability"
+  ],
+  "license": "UNLICENSED",
+  "dependencies": {
+    "argon2": "^0.44.0",
+    "compression": "^1.8.1",
+    "cookie": "^1.1.1",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.5.2",
+    "helmet": "^8.2.0",
+    "ipaddr.js": "^2.4.0",
+    "pg": "^8.21.0",
+    "pino": "^10.3.1",
+    "pino-http": "^11.0.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "eslint": "^10.4.1",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.8.4",
+    "supertest": "^7.2.2",
+    "vite": "^8.0.16"
+  }
+}
