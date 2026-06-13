@@ -1,0 +1,429 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Netra NOC API",
+    "description": "Network Operations Center API for monitoring and management",
+    "version": "2.5.0",
+    "contact": {
+      "name": "Support",
+      "email": "support@netra-noc.local"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.netra-noc.local",
+      "description": "Production"
+    },
+    {
+      "url": "http://localhost:3000",
+      "description": "Development"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "sessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "session"
+      },
+      "bearerToken": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "API Token for programmatic access"
+      }
+    },
+    "schemas": {
+      "Device": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "type": { "type": "string", "enum": ["router", "firewall", "switch", "access_point", "server", "computer", "printer", "nvr", "cctv"] },
+          "status": { "type": "string", "enum": ["online", "warning", "offline", "unknown"] },
+          "cpuPercent": { "type": "number" },
+          "memoryPercent": { "type": "number" },
+          "trafficMbps": { "type": "number" },
+          "latencyMs": { "type": "number" }
+        }
+      },
+      "Alert": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "deviceId": { "type": "string", "format": "uuid" },
+          "severity": { "type": "string", "enum": ["critical", "warning", "info"] },
+          "title": { "type": "string" },
+          "status": { "type": "string", "enum": ["new", "investigating", "acknowledged", "resolved"] }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "username": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "role": { "type": "string", "enum": ["admin", "operator", "viewer", "auditor"] }
+        }
+      },
+      "NotificationChannel": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "type": { "type": "string", "enum": ["email", "webhook", "teams", "slack", "telegram"] },
+          "name": { "type": "string" },
+          "endpoint": { "type": "string" }
+        }
+      },
+      "DeviceGroup": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "description": { "type": "string" },
+          "deviceCount": { "type": "integer" }
+        }
+      },
+      "MaintenanceWindow": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "title": { "type": "string" },
+          "startTime": { "type": "string", "format": "date-time" },
+          "endTime": { "type": "string", "format": "date-time" },
+          "status": { "type": "string", "enum": ["scheduled", "active", "completed", "cancelled"] }
+        }
+      },
+      "SLAPolicy": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "name": { "type": "string" },
+          "targetUptimePercent": { "type": "number" },
+          "responseTimeMinutes": { "type": "integer" }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/health/live": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Server liveness probe",
+        "responses": {
+          "200": {
+            "description": "Server is running",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object", "properties": { "status": { "type": "string" } } }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Server readiness probe",
+        "responses": {
+          "200": {
+            "description": "Server is ready",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object", "properties": { "status": { "type": "string" }, "database": { "type": "string" } } }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Login with username and password",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": { "type": "string" },
+                  "password": { "type": "string" },
+                  "remember": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful"
+          }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "tags": ["Authentication"],
+        "summary": "Logout user",
+        "security": [{ "sessionCookie": [] }],
+        "responses": {
+          "200": {
+            "description": "Logout successful"
+          }
+        }
+      }
+    },
+    "/api/dashboard/overview": {
+      "get": {
+        "tags": ["Dashboard"],
+        "summary": "Get dashboard overview",
+        "security": [{ "sessionCookie": [] }],
+        "responses": {
+          "200": {
+            "description": "Dashboard overview data"
+          }
+        }
+      }
+    },
+    "/api/devices": {
+      "get": {
+        "tags": ["Devices"],
+        "summary": "List devices",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          { "name": "query", "in": "query", "schema": { "type": "string" } },
+          { "name": "type", "in": "query", "schema": { "type": "string" } },
+          { "name": "status", "in": "query", "schema": { "type": "string" } },
+          { "name": "page", "in": "query", "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of devices"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Devices"],
+        "summary": "Create device",
+        "security": [{ "sessionCookie": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "type": { "type": "string" },
+                  "ipAddress": { "type": "string" },
+                  "location": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Device created"
+          }
+        }
+      }
+    },
+    "/api/notifications/channels": {
+      "get": {
+        "tags": ["Notifications"],
+        "summary": "List notification channels",
+        "security": [{ "sessionCookie": [] }],
+        "responses": {
+          "200": {
+            "description": "List of notification channels"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Notifications"],
+        "summary": "Create notification channel",
+        "security": [{ "sessionCookie": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "type": { "type": "string", "enum": ["email", "webhook", "teams", "slack"] },
+                  "name": { "type": "string" },
+                  "endpoint": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Channel created"
+          }
+        }
+      }
+    },
+    "/api/device-groups": {
+      "get": {
+        "tags": ["Device Groups"],
+        "summary": "List device groups",
+        "security": [{ "sessionCookie": [] }],
+        "responses": {
+          "200": {
+            "description": "List of device groups"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Device Groups"],
+        "summary": "Create device group",
+        "security": [{ "sessionCookie": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "description": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Group created"
+          }
+        }
+      }
+    },
+    "/api/topology": {
+      "get": {
+        "tags": ["Topology"],
+        "summary": "Get network topology",
+        "security": [{ "sessionCookie": [] }],
+        "responses": {
+          "200": {
+            "description": "Network topology graph"
+          }
+        }
+      }
+    },
+    "/api/sla/policies": {
+      "get": {
+        "tags": ["SLA"],
+        "summary": "List SLA policies",
+        "security": [{ "sessionCookie": [] }],
+        "responses": {
+          "200": {
+            "description": "List of SLA policies"
+          }
+        }
+      },
+      "post": {
+        "tags": ["SLA"],
+        "summary": "Create SLA policy",
+        "security": [{ "sessionCookie": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "targetUptimePercent": { "type": "number" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Policy created"
+          }
+        }
+      }
+    },
+    "/api/reports": {
+      "get": {
+        "tags": ["Reports"],
+        "summary": "List scheduled reports",
+        "security": [{ "sessionCookie": [] }],
+        "responses": {
+          "200": {
+            "description": "List of reports"
+          }
+        }
+      },
+      "post": {
+        "tags": ["Reports"],
+        "summary": "Create scheduled report",
+        "security": [{ "sessionCookie": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "reportType": { "type": "string", "enum": ["sla", "uptime", "traffic"] },
+                  "frequency": { "type": "string", "enum": ["daily", "weekly", "monthly"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Report created"
+          }
+        }
+      }
+    },
+    "/api/api-tokens": {
+      "get": {
+        "tags": ["API Tokens"],
+        "summary": "List user's API tokens",
+        "security": [{ "sessionCookie": [] }],
+        "responses": {
+          "200": {
+            "description": "List of API tokens"
+          }
+        }
+      },
+      "post": {
+        "tags": ["API Tokens"],
+        "summary": "Create API token",
+        "security": [{ "sessionCookie": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "scopes": { "type": "array", "items": { "type": "string" } }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Token created"
+          }
+        }
+      }
+    }
+  }
+}

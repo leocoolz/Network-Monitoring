@@ -19,6 +19,16 @@ import { createDashboardRouter } from "./routes/dashboard-routes.js";
 import { createDeviceRouter } from "./routes/device-routes.js";
 import { createExportRouter } from "./routes/export-routes.js";
 import { createUserRouter } from "./routes/user-routes.js";
+import { createNotificationRouter } from "./routes/notification-routes.js";
+import { createDeviceGroupRouter } from "./routes/device-group-routes.js";
+import { createEscalationRouter } from "./routes/escalation-routes.js";
+import { createMaintenanceRouter } from "./routes/maintenance-routes.js";
+import { createSLARouter } from "./routes/sla-routes.js";
+import { createTopologyRouter } from "./routes/topology-routes.js";
+import { createReportRouter } from "./routes/report-routes.js";
+import { createConfigBackupRouter } from "./routes/config-backup-routes.js";
+import { createAPITokenRouter } from "./routes/api-token-routes.js";
+import { createDiscoveryRouter } from "./routes/discovery-routes.js";
 
 const publicDirectory = env.isProduction ? resolve(process.cwd(), "dist") : resolve(process.cwd(), "public");
 
@@ -111,6 +121,16 @@ export function createApp() {
   app.use("/api/export", createExportRouter());
   app.use("/api/users", createUserRouter());
   app.use("/api/audit", createAuditRouter());
+  app.use("/api/notifications", createNotificationRouter());
+  app.use("/api/device-groups", createDeviceGroupRouter());
+  app.use("/api/escalation", createEscalationRouter());
+  app.use("/api/maintenance", createMaintenanceRouter());
+  app.use("/api/sla", createSLARouter());
+  app.use("/api/topology", createTopologyRouter());
+  app.use("/api/reports", createReportRouter());
+  app.use("/api/config-backup", createConfigBackupRouter());
+  app.use("/api/api-tokens", createAPITokenRouter());
+  app.use("/api/discovery", createDiscoveryRouter());
   app.use("/api", notFoundHandler);
 
   app.use(

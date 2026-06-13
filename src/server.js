@@ -1,10 +1,12 @@
 import { createServer } from "node:http";
 import { createApp } from "./app.js";
+import { createWebSocketServer } from "./lib/websocket.js";
 import { env } from "./config/env.js";
 import { pool } from "./db/pool.js";
 
 const app = createApp();
 const server = createServer(app);
+createWebSocketServer(server);
 
 server.requestTimeout = 30_000;
 server.headersTimeout = 15_000;

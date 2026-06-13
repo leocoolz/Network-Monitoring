@@ -57,7 +57,7 @@ async function seed() {
           model = EXCLUDED.model, type = EXCLUDED.type, code = EXCLUDED.code,
           ip_address = EXCLUDED.ip_address, location = EXCLUDED.location,
           monitoring_method = EXCLUDED.monitoring_method, updated_at = NOW()`,
-        [randomUUID(), ...device, device[6] === 'offline' ? null : new Date()]
+        [randomUUID(), ...device, device[6] === "offline" ? null : new Date()]
       );
     }
 
@@ -75,7 +75,7 @@ async function seed() {
         await client.query(
           `INSERT INTO alerts (id, device_id, severity, title, detail, status, acknowledged_by, acknowledged_at)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-          [randomUUID(), deviceIds.get(deviceName), severity, title, detail, status, acknowledgedBy, status === 'acknowledged' ? new Date() : null]
+          [randomUUID(), deviceIds.get(deviceName), severity, title, detail, status, acknowledgedBy, status === "acknowledged" ? new Date() : null]
         );
       }
     }

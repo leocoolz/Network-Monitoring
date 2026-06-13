@@ -1,5 +1,7 @@
 import js from "@eslint/js";
 
+export const ignores = ["dist/**", "node_modules/**", ".vscode/**"];
+
 export default [
   js.configs.recommended,
   {
@@ -17,7 +19,10 @@ export default [
         window: "readonly",
         Headers: "readonly",
         fetch: "readonly",
-        FormData: "readonly"
+        FormData: "readonly",
+        MutationObserver: "readonly",
+        CustomEvent: "readonly",
+        requestAnimationFrame: "readonly"
       }
     },
     rules: {

@@ -1,4 +1,5 @@
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
+import { Buffer } from "buffer";
 import argon2 from "argon2";
 
 const ARGON2_OPTIONS = Object.freeze({
