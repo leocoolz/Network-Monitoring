@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#07111f" />
     <title>Netra NOC - Network Monitoring Center</title>
-    <script type="module" crossorigin src="/assets/main-auk8AuaX.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/main-_cJR2400.css">
+    <script type="module" crossorigin src="/assets/main-rJNtVY9q.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/main-C7J1HtLx.css">
   </head>
   <body class="auth-pending">
     <svg class="svg-sprite" aria-hidden="true">
@@ -170,10 +170,10 @@
           </button>
 
           <p class="nav-label second">MANAGEMENT</p>
-          <button class="nav-item">
+          <button class="nav-item" id="navReports">
             <svg><use href="#i-report" /></svg><span>Reports</span>
           </button>
-          <button class="nav-item">
+          <button class="nav-item" id="navSettings">
             <svg><use href="#i-settings" /></svg><span>Settings</span>
           </button>
         </nav>
@@ -524,22 +524,23 @@
       <div class="modal-card">
         <div class="modal-head">
           <div>
-            <small>NEW MANAGED ASSET</small>
-            <h2>Tambah Perangkat</h2>
+            <small id="deviceModalSubtitle">NEW MANAGED ASSET</small>
+            <h2 id="deviceModalTitle">Tambah Perangkat</h2>
           </div>
-          <button class="icon-button" data-close-modal aria-label="Tutup form tambah perangkat">
+          <button class="icon-button" data-close-modal aria-label="Tutup form">
             <svg><use href="#i-close" /></svg>
           </button>
         </div>
         <form id="addDeviceForm">
-          <label>Nama perangkat<input name="name" required placeholder="Contoh: SW-FLOOR-03" /></label>
+          <input type="hidden" name="id" id="editDeviceId" />
+          <label>Nama perangkat<input name="name" id="devName" required placeholder="Contoh: SW-FLOOR-03" /></label>
           <div class="form-row">
-            <label>Model<input name="model" required placeholder="Contoh: Cisco CBS350" /></label
-            ><label>Kode<input name="code" required maxlength="4" pattern="[A-Za-z0-9]{2,4}" placeholder="SW" /></label>
+            <label>Model<input name="model" id="devModel" required placeholder="Contoh: Cisco CBS350" /></label
+            ><label>Kode<input name="code" id="devCode" required maxlength="4" pattern="[A-Za-z0-9]{2,4}" placeholder="SW" /></label>
           </div>
           <div class="form-row">
             <label
-              >Tipe<select name="type" required>
+              >Tipe<select name="type" id="devType" required>
                 <option>Router</option>
                 <option>Firewall</option>
                 <option>Switch</option>
@@ -551,9 +552,9 @@
                 <option>NVR</option>
                 <option>CCTV</option>
               </select></label
-            ><label>IP address<input name="ipAddress" required placeholder="192.168.1.1" /></label>
+            ><label>IP address<input name="ipAddress" id="devIp" required placeholder="192.168.1.1" /></label>
           </div>
-          <label>Lokasi<input name="location" required placeholder="Gedung / lantai / ruangan" /></label>
+          <label>Lokasi<input name="location" id="devLocation" required placeholder="Gedung / lantai / ruangan" /></label>
           <div class="form-row">
             <label
               >Metode monitoring<select name="monitoringMethod" id="monitoringMethod" required>
@@ -565,14 +566,95 @@
               </select></label
             ><label>TCP port<input name="tcpPort" id="tcpPort" type="number" min="1" max="65535" placeholder="Opsional" /></label>
           </div>
+          <div class="form-row" id="snmpConfigRow" style="display: none">
+            <label
+              >SNMP Community<input
+                name="snmpCommunity"
+                id="snmpCommunity"
+                minlength="8"
+                autocomplete="new-password"
+                placeholder="Masukkan community yang unik"
+            /></label>
+            <label
+              >SNMP Version
+              <select name="snmpVersion" id="snmpVersion">
+                <option value="v1">v1</option>
+                <option value="v2c" selected>v2c</option>
+              </select>
+            </label>
+          </div>
           <div class="form-note">
             <span>SECURE</span>
             <p>Target hanya dapat ditambahkan jika IP termasuk dalam allowlist jaringan server.</p>
           </div>
           <div class="modal-actions">
-            <button type="button" class="button secondary" data-close-modal>Batal</button><button type="submit" class="button primary">Tambah & Monitor</button>
+            <button type="button" class="button secondary" data-close-modal>Batal</button>
+            <button type="submit" class="button primary" id="submitDeviceBtn">Simpan Perangkat</button>
           </div>
         </form>
+      </div>
+    </div>
+
+    <div class="modal" id="settingsModal" aria-hidden="true">
+      <button class="modal-backdrop" data-close-settings aria-label="Tutup settings"></button>
+      <div class="modal-card">
+        <div class="modal-head">
+          <div>
+            <small>STANDALONE CONFIGURATION</small>
+            <h2>Application Settings</h2>
+          </div>
+          <button class="icon-button" data-close-settings aria-label="Tutup settings">
+            <svg><use href="#i-close" /></svg>
+          </button>
+        </div>
+        <form id="settingsForm">
+          <label>Organization name<input name="organizationName" id="settingOrganization" required minlength="2" maxlength="120" /></label>
+          <div class="form-row">
+            <label
+              >Timezone<select name="timezone" id="settingTimezone">
+                <option value="Asia/Jakarta">Asia/Jakarta (WIB)</option>
+                <option value="Asia/Makassar">Asia/Makassar (WITA)</option>
+                <option value="Asia/Jayapura">Asia/Jayapura (WIT)</option>
+                <option value="UTC">UTC</option>
+              </select></label
+            >
+            <label>Dashboard refresh<input name="dashboardRefreshSeconds" id="settingRefresh" type="number" min="10" max="300" required /></label>
+          </div>
+          <label
+            >Default monitoring method<select name="defaultMonitoringMethod" id="settingMethod">
+              <option value="icmp">ICMP</option>
+              <option value="tcp">TCP</option>
+              <option value="snmp">SNMP</option>
+            </select></label
+          >
+          <div class="form-note">
+            <span>NOTE</span>
+            <p>Poller concurrency, CIDR allowlist, encryption key, dan public origin tetap dikelola melalui `.env.standalone` dan membutuhkan restart.</p>
+          </div>
+          <div class="modal-actions">
+            <button type="button" class="button secondary" data-close-settings>Batal</button
+            ><button type="submit" class="button primary">Simpan Settings</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="modal" id="confirmDeleteModal" aria-hidden="true">
+      <button class="modal-backdrop" data-cancel-delete aria-label="Batalkan delete"></button>
+      <div class="modal-card confirm-card">
+        <div class="modal-head">
+          <div>
+            <small>DESTRUCTIVE ACTION</small>
+            <h2>Hapus perangkat?</h2>
+          </div>
+        </div>
+        <div class="confirm-body">
+          <p>Perangkat <strong id="deleteDeviceName">-</strong> akan dinonaktifkan dan tidak lagi dipantau. Audit log tetap disimpan.</p>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="button secondary" data-cancel-delete>Batal</button
+          ><button type="button" class="button danger-button" id="confirmDeleteButton">Hapus Perangkat</button>
+        </div>
       </div>
     </div>
 

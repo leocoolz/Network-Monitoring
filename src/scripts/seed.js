@@ -11,7 +11,11 @@ const seedEnvSchema = z.object({
     .regex(/^[a-z0-9._-]{3,64}$/),
   ADMIN_PASSWORD: z.string().min(14).max(128),
   ADMIN_DISPLAY_NAME: z.string().trim().min(2).max(120),
-  ADMIN_EMAIL: z.string().trim().toLowerCase().email().max(254)
+  ADMIN_EMAIL: z.string().trim().toLowerCase().email().max(254),
+  SEED_SAMPLE_DATA: z
+    .enum(["true", "false"])
+    .default("false")
+    .transform((value) => value === "true")
 });
 
 const devices = [
@@ -37,15 +41,11 @@ async function seed() {
     await client.query(
       `INSERT INTO users (id, username, password_hash, display_name, email, role)
        VALUES ($1, $2, $3, $4, $5, 'admin')
-       ON CONFLICT (username) DO UPDATE SET
-         password_hash = EXCLUDED.password_hash,
-         display_name = EXCLUDED.display_name,
-         email = EXCLUDED.email,
-         role = 'admin',
-         is_active = TRUE,
-         updated_at = NOW()`,
+       ON CONFLICT (username) DO NOTHING`,
       [randomUUID(), admin.ADMIN_USERNAME, passwordHash, admin.ADMIN_DISPLAY_NAME, admin.ADMIN_EMAIL]
     );
+
+    if (!admin.SEED_SAMPLE_DATA) return;
 
     for (const device of devices) {
       await client.query(

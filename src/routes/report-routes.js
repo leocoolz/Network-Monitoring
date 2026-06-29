@@ -17,7 +17,7 @@ const reportSchema = z.object({
 });
 
 const slaReportSchema = z.object({
-  groupId: z.string().uuid(),
+  groupId: z.string().uuid().optional().nullable(),
   startDate: z.string().date(),
   endDate: z.string().date()
 });

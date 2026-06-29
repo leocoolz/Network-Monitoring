@@ -2,6 +2,8 @@
 
 Dokumen ini melengkapi prototipe Netra NOC dengan rancangan implementasi untuk jaringan kantor, kampus, pabrik, gudang, atau multi-cabang.
 
+> Status implementasi saat ini: mode standalone menggunakan Node.js, PostgreSQL, internal poller ICMP/TCP, serta SNMP v1/v2c. SNMPv3, NetFlow/sFlow/IPFIX, ONVIF aktif, agent endpoint, message queue, dan high availability pada bagian berikut adalah target arsitektur dan belum seluruhnya diimplementasikan.
+
 ## 1. Arsitektur Logis
 
 ```mermaid

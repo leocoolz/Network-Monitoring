@@ -1,12 +1,14 @@
 import { createServer } from "node:http";
 import { createApp } from "./app.js";
 import { createWebSocketServer } from "./lib/websocket.js";
+import { startInternalPoller } from "./workers/poller.js";
 import { env } from "./config/env.js";
 import { pool } from "./db/pool.js";
 
 const app = createApp();
 const server = createServer(app);
-createWebSocketServer(server);
+const websocketServer = createWebSocketServer(server);
+const poller = startInternalPoller();
 
 server.requestTimeout = 30_000;
 server.headersTimeout = 15_000;
@@ -29,6 +31,8 @@ cleanupTimer.unref();
 async function shutdown(signal) {
   process.stdout.write(`${signal} received, shutting down gracefully\n`);
   clearInterval(cleanupTimer);
+  poller.stop();
+  websocketServer.close();
   server.close(async () => {
     await pool.end();
     process.exit(0);

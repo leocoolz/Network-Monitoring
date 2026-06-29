@@ -19,6 +19,8 @@ function normalizeDevice(device) {
     status: device.status,
     method: device.monitoring_method,
     tcpPort: device.tcp_port,
+    snmpVersion: device.snmp_version,
+    hasSnmpCredentials: Boolean(device.has_snmp_credentials),
     cpu: Number(device.cpu_percent || 0),
     memory: Number(device.memory_percent || 0),
     trafficMbps: Number(device.traffic_mbps || 0),
@@ -192,6 +194,10 @@ export function renderDevices() {
   $$("#deviceTableBody [data-device-id]").forEach((row) => row.addEventListener("click", () => openDevice(row.dataset.deviceId)));
 }
 
+export function getDevice(identifier) {
+  return state.devices.find((device) => device.id === identifier || device.name === identifier) || null;
+}
+
 function fallbackDevice(name) {
   const wan = name.includes("Internet");
   return {
@@ -213,7 +219,7 @@ function fallbackDevice(name) {
 }
 
 export function openDevice(identifier) {
-  const device = state.devices.find((item) => item.id === identifier || item.name === identifier) || fallbackDevice(identifier);
+  const device = getDevice(identifier) || fallbackDevice(identifier);
   $("#drawerName").textContent = device.name;
   $("#drawerIcon").textContent = device.code;
   $("#drawerBody").innerHTML = `
@@ -231,12 +237,21 @@ export function openDevice(identifier) {
       <div class="metric-row"><div><span>Memory utilization</span><strong>${device.memory.toFixed(0)}%</strong></div><div class="metric-bar"><span style="width:${Math.min(100, device.memory)}%"></span></div></div>
     </div>
     <div class="drawer-section"><h3>MONITORING SERVICE</h3><div class="detail-grid"><div class="detail-card"><span>METHOD</span><strong>${escapeHtml(device.method.toUpperCase())}</strong></div><div class="detail-card"><span>LAST SEEN</span><strong>${device.lastSeenAt ? timeAgo(device.lastSeenAt) : "No response"}</strong></div></div></div>
-    <div class="drawer-actions"><button class="button secondary" id="closeDrawerAction" type="button">Close</button><button class="button primary" id="refreshDeviceAction" type="button">Refresh Dashboard</button></div>
+    <div class="drawer-actions">
+      <button class="button secondary" id="closeDrawerAction" type="button">Close</button>
+      ${device.id && ["admin", "operator"].includes(document.body.dataset.role) ? '<button class="button secondary" id="editDeviceAction" type="button">Edit</button>' : ""}
+      ${device.id && document.body.dataset.role === "admin" ? '<button class="button danger-button" id="deleteDeviceAction" type="button">Delete</button>' : ""}
+      <button class="button primary" id="refreshDeviceAction" type="button">Refresh</button>
+    </div>
   `;
   $("#deviceDrawer").classList.add("open");
   $("#drawerOverlay").classList.add("open");
   $("#deviceDrawer").setAttribute("aria-hidden", "false");
   $("#closeDrawerAction").addEventListener("click", closeDrawer);
+  $("#editDeviceAction")?.addEventListener("click", () => window.dispatchEvent(new CustomEvent("netra:edit-device", { detail: { id: device.id } })));
+  $("#deleteDeviceAction")?.addEventListener("click", () =>
+    window.dispatchEvent(new CustomEvent("netra:delete-device", { detail: { id: device.id, name: device.name } }))
+  );
   $("#refreshDeviceAction").addEventListener("click", () => window.dispatchEvent(new CustomEvent("netra:refresh")));
 }
 

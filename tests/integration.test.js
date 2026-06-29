@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
-import { readFile } from "node:fs/promises";
+import { Buffer } from "node:buffer";
+import { readdir, readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
@@ -14,11 +15,12 @@ process.env.TRUST_PROXY = "false";
 process.env.COOKIE_SECURE = "false";
 process.env.ALLOWED_DEVICE_CIDRS = "10.0.0.0/8,192.168.0.0/16";
 process.env.COLLECTOR_API_KEY = "test_collector_key_with_more_than_32_characters";
+process.env.CREDENTIAL_ENCRYPTION_KEY = Buffer.alloc(32, 7).toString("base64");
 process.env.LOG_LEVEL = "silent";
 
 const { createApp } = await import("../src/app.js");
 const { pool } = await import("../src/db/pool.js");
-const { hashPassword } = await import("../src/lib/crypto.js");
+const { decryptCredential, hashPassword } = await import("../src/lib/crypto.js");
 
 const origin = process.env.APP_ORIGIN;
 const agent = request.agent(createApp());
@@ -26,11 +28,19 @@ let csrfToken;
 let deviceId;
 let viewerAgent;
 let viewerCsrfToken;
+let createdDeviceId;
 
 before(async () => {
-  const migration = await readFile(resolve(process.cwd(), "migrations/001_initial.sql"), "utf8");
-  await pool.query(migration);
+  const migrationDirectory = resolve(process.cwd(), "migrations");
+  const migrations = (await readdir(migrationDirectory)).filter((file) => file.endsWith(".sql")).sort();
+  for (const migration of migrations) await pool.query(await readFile(resolve(migrationDirectory, migration), "utf8"));
   await pool.query("TRUNCATE audit_logs, traffic_samples, alerts, sessions, devices, users RESTART IDENTITY CASCADE");
+  await pool.query(`INSERT INTO app_settings (key, value) VALUES
+    ('organization_name', '"Netra NOC"'::jsonb),
+    ('timezone', '"Asia/Jakarta"'::jsonb),
+    ('dashboard_refresh_seconds', '30'::jsonb),
+    ('default_monitoring_method', '"icmp"'::jsonb)
+    ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_by = NULL, updated_at = NOW()`);
   const userId = randomUUID();
   await pool.query(
     `INSERT INTO users (id, username, password_hash, display_name, email, role)
@@ -135,12 +145,82 @@ test("admin can create an allowed device and acknowledge alerts", async () => {
     code: "SW",
     ipAddress: "10.0.0.2",
     location: "Test Lab",
-    monitoringMethod: "snmp"
+    monitoringMethod: "snmp",
+    snmpCommunity: "integration-secret",
+    snmpVersion: "v2c"
   });
   assert.equal(createResponse.status, 201);
+  createdDeviceId = createResponse.body.data.id;
+  assert.equal(createResponse.body.data.has_snmp_credentials, true);
+  assert.equal(createResponse.body.data.snmp_community, undefined);
+  const storedCredential = (await pool.query("SELECT snmp_community_encrypted FROM devices WHERE name = 'SW-TEST-02'")).rows[0].snmp_community_encrypted;
+  assert.notEqual(storedCredential, "integration-secret");
+  assert.equal(decryptCredential(storedCredential), "integration-secret");
   const alertResponse = await agent.post("/api/alerts/acknowledge").set("Origin", origin).set("X-CSRF-Token", csrfToken).send({});
   assert.equal(alertResponse.status, 200);
   assert.equal(alertResponse.body.data.acknowledged, 1);
+});
+
+test("admin can update a device without exposing or replacing its SNMP secret", async () => {
+  const before = (await pool.query("SELECT snmp_community_encrypted FROM devices WHERE id = $1", [createdDeviceId])).rows[0].snmp_community_encrypted;
+  const response = await agent
+    .patch(`/api/devices/${createdDeviceId}`)
+    .set("Origin", origin)
+    .set("X-CSRF-Token", csrfToken)
+    .send({ name: "SW-TEST-UPDATED", location: "Updated Lab" });
+  assert.equal(response.status, 200);
+  assert.equal(response.body.data.name, "SW-TEST-UPDATED");
+  assert.equal(response.body.data.snmp_community, undefined);
+  const after = (await pool.query("SELECT snmp_community_encrypted FROM devices WHERE id = $1", [createdDeviceId])).rows[0].snmp_community_encrypted;
+  assert.equal(after, before);
+});
+
+test("changing a device to SNMP requires a credential", async () => {
+  const createResponse = await agent.post("/api/devices").set("Origin", origin).set("X-CSRF-Token", csrfToken).send({
+    name: "ICMP-TO-SNMP",
+    model: "Virtual Appliance",
+    type: "Server",
+    code: "SV",
+    ipAddress: "10.0.0.20",
+    location: "Test Lab",
+    monitoringMethod: "icmp"
+  });
+  assert.equal(createResponse.status, 201);
+  const id = createResponse.body.data.id;
+
+  const updateResponse = await agent.patch(`/api/devices/${id}`).set("Origin", origin).set("X-CSRF-Token", csrfToken).send({ monitoringMethod: "snmp" });
+  assert.equal(updateResponse.status, 400);
+  assert.match(updateResponse.body.error.message, /SNMP community/);
+
+  const stored = (await pool.query("SELECT monitoring_method FROM devices WHERE id = $1", [id])).rows[0];
+  assert.equal(stored.monitoring_method, "icmp");
+  assert.equal((await agent.delete(`/api/devices/${id}`).set("Origin", origin).set("X-CSRF-Token", csrfToken)).status, 204);
+});
+
+test("admin can read and update application settings", async () => {
+  const readResponse = await agent.get("/api/settings");
+  assert.equal(readResponse.status, 200);
+  assert.equal(readResponse.body.data.timezone, "Asia/Jakarta");
+  const updateResponse = await agent
+    .patch("/api/settings")
+    .set("Origin", origin)
+    .set("X-CSRF-Token", csrfToken)
+    .send({ organizationName: "Standalone Test NOC", dashboardRefreshSeconds: 45 });
+  assert.equal(updateResponse.status, 200);
+  assert.equal(updateResponse.body.data.organizationName, "Standalone Test NOC");
+  assert.equal(updateResponse.body.data.dashboardRefreshSeconds, 45);
+});
+
+test("discovery requires CSRF and rejects oversized subnets", async () => {
+  const missingCsrf = await agent.post("/api/discovery/sessions").set("Origin", origin).send({ targetSubnet: "10.0.0.0/24", scanningMethod: "icmp" });
+  assert.equal(missingCsrf.status, 403);
+  const oversized = await agent
+    .post("/api/discovery/sessions")
+    .set("Origin", origin)
+    .set("X-CSRF-Token", csrfToken)
+    .send({ targetSubnet: "10.0.0.0/8", scanningMethod: "icmp" });
+  assert.equal(oversized.status, 400);
+  assert.match(oversized.body.error.message, /safety limit/);
 });
 
 test("viewer sessions are read-only", async () => {
@@ -187,6 +267,13 @@ test("collector ingestion requires its independent key and updates metrics", asy
     });
   assert.equal(accepted.status, 202);
   assert.equal(accepted.body.data.updatedDevices, 1);
+});
+
+test("admin can soft-delete a device", async () => {
+  const response = await agent.delete(`/api/devices/${createdDeviceId}`).set("Origin", origin).set("X-CSRF-Token", csrfToken);
+  assert.equal(response.status, 204);
+  const row = (await pool.query("SELECT enabled FROM devices WHERE id = $1", [createdDeviceId])).rows[0];
+  assert.equal(row.enabled, false);
 });
 
 test("logout revokes the session", async () => {

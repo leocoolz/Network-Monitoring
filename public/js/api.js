@@ -54,6 +54,22 @@ export async function addDevice(device) {
   return (await request("/api/devices", { method: "POST", body: device })).data;
 }
 
+export async function updateDevice(id, data) {
+  return (await request(`/api/devices/${id}`, { method: "PATCH", body: data })).data;
+}
+
+export async function deleteDevice(id) {
+  return request(`/api/devices/${id}`, { method: "DELETE" });
+}
+
+export async function getSettings() {
+  return (await request("/api/settings")).data;
+}
+
+export async function updateSettings(settings) {
+  return (await request("/api/settings", { method: "PATCH", body: settings })).data;
+}
+
 export async function acknowledgeAllAlerts() {
   return (await request("/api/alerts/acknowledge", { method: "POST", body: {} })).data;
 }

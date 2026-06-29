@@ -29,6 +29,7 @@ import { createReportRouter } from "./routes/report-routes.js";
 import { createConfigBackupRouter } from "./routes/config-backup-routes.js";
 import { createAPITokenRouter } from "./routes/api-token-routes.js";
 import { createDiscoveryRouter } from "./routes/discovery-routes.js";
+import { createSettingRouter } from "./routes/setting-routes.js";
 
 const publicDirectory = env.isProduction ? resolve(process.cwd(), "dist") : resolve(process.cwd(), "public");
 
@@ -131,6 +132,7 @@ export function createApp() {
   app.use("/api/config-backup", createConfigBackupRouter());
   app.use("/api/api-tokens", createAPITokenRouter());
   app.use("/api/discovery", createDiscoveryRouter());
+  app.use("/api/settings", createSettingRouter());
   app.use("/api", notFoundHandler);
 
   app.use(

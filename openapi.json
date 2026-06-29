@@ -38,12 +38,47 @@
         "properties": {
           "id": { "type": "string", "format": "uuid" },
           "name": { "type": "string" },
-          "type": { "type": "string", "enum": ["router", "firewall", "switch", "access_point", "server", "computer", "printer", "nvr", "cctv"] },
+          "model": { "type": "string" },
+          "code": { "type": "string", "pattern": "^[A-Z0-9]{2,4}$" },
+          "type": {
+            "type": "string",
+            "enum": ["router", "firewall", "switch", "radio_wifi", "access_point", "server", "computer", "printer", "nvr", "cctv"]
+          },
+          "ip_address": { "type": "string" },
+          "location": { "type": "string" },
           "status": { "type": "string", "enum": ["online", "warning", "offline", "unknown"] },
+          "monitoring_method": { "type": "string", "enum": ["icmp", "snmp", "tcp", "api", "onvif"] },
+          "tcp_port": { "type": "integer", "minimum": 1, "maximum": 65535, "nullable": true },
+          "snmp_version": { "type": "string", "enum": ["v1", "v2c"] },
+          "has_snmp_credentials": { "type": "boolean" },
           "cpuPercent": { "type": "number" },
           "memoryPercent": { "type": "number" },
           "trafficMbps": { "type": "number" },
           "latencyMs": { "type": "number" }
+        }
+      },
+      "DeviceInput": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string", "minLength": 2, "maxLength": 120 },
+          "model": { "type": "string", "minLength": 2, "maxLength": 160 },
+          "type": { "type": "string" },
+          "code": { "type": "string", "pattern": "^[A-Z0-9]{2,4}$" },
+          "ipAddress": { "type": "string" },
+          "location": { "type": "string", "minLength": 2, "maxLength": 200 },
+          "monitoringMethod": { "type": "string", "enum": ["icmp", "snmp", "tcp", "api", "onvif"] },
+          "tcpPort": { "type": "integer", "minimum": 1, "maximum": 65535 },
+          "snmpCommunity": { "type": "string", "minLength": 8, "writeOnly": true },
+          "snmpVersion": { "type": "string", "enum": ["v1", "v2c"], "default": "v2c" }
+        }
+      },
+      "ApplicationSettings": {
+        "type": "object",
+        "properties": {
+          "organizationName": { "type": "string", "minLength": 2, "maxLength": 120 },
+          "timezone": { "type": "string", "enum": ["Asia/Jakarta", "Asia/Makassar", "Asia/Jayapura", "UTC"] },
+          "dashboardRefreshSeconds": { "type": "integer", "minimum": 10, "maximum": 300 },
+          "defaultMonitoringMethod": { "type": "string", "enum": ["icmp", "tcp", "snmp"] }
         }
       },
       "Alert": {
@@ -208,18 +243,16 @@
         "tags": ["Devices"],
         "summary": "Create device",
         "security": [{ "sessionCookie": [] }],
+        "parameters": [{ "name": "X-CSRF-Token", "in": "header", "required": true, "schema": { "type": "string" } }],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "type": "object",
-                "properties": {
-                  "name": { "type": "string" },
-                  "type": { "type": "string" },
-                  "ipAddress": { "type": "string" },
-                  "location": { "type": "string" }
-                }
+                "allOf": [
+                  { "$ref": "#/components/schemas/DeviceInput" },
+                  { "required": ["name", "model", "type", "code", "ipAddress", "location", "monitoringMethod"] }
+                ]
               }
             }
           }
@@ -229,6 +262,58 @@
             "description": "Device created"
           }
         }
+      }
+    },
+    "/api/devices/{id}": {
+      "get": {
+        "tags": ["Devices"],
+        "summary": "Get a device",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } }],
+        "responses": { "200": { "description": "Device details" }, "404": { "description": "Device not found" } }
+      },
+      "patch": {
+        "tags": ["Devices"],
+        "summary": "Update a device",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "X-CSRF-Token", "in": "header", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/DeviceInput" } } }
+        },
+        "responses": { "200": { "description": "Device updated" }, "404": { "description": "Device not found" } }
+      },
+      "delete": {
+        "tags": ["Devices"],
+        "summary": "Soft-delete a device",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string", "format": "uuid" } },
+          { "name": "X-CSRF-Token", "in": "header", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": { "204": { "description": "Device disabled" }, "404": { "description": "Device not found" } }
+      }
+    },
+    "/api/settings": {
+      "get": {
+        "tags": ["Settings"],
+        "summary": "Get application settings",
+        "security": [{ "sessionCookie": [] }],
+        "responses": { "200": { "description": "Application settings" } }
+      },
+      "patch": {
+        "tags": ["Settings"],
+        "summary": "Update application settings",
+        "security": [{ "sessionCookie": [] }],
+        "parameters": [{ "name": "X-CSRF-Token", "in": "header", "required": true, "schema": { "type": "string" } }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApplicationSettings" } } }
+        },
+        "responses": { "200": { "description": "Application settings updated" }, "403": { "description": "Admin role required" } }
       }
     },
     "/api/notifications/channels": {

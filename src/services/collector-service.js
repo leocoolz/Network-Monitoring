@@ -12,8 +12,10 @@ export async function ingestCollectorBatch(payload) {
       if (!previous) continue;
 
       await client.query(
-        `UPDATE devices SET status = $2::varchar, cpu_percent = $3, memory_percent = $4,
-          traffic_mbps = $5, latency_ms = $6, uptime_seconds = $7,
+        `UPDATE devices SET status = $2::varchar,
+          cpu_percent = COALESCE($3, cpu_percent), memory_percent = COALESCE($4, memory_percent),
+          traffic_mbps = COALESCE($5, traffic_mbps), latency_ms = $6,
+          uptime_seconds = COALESCE($7, uptime_seconds),
           last_seen_at = CASE WHEN $2::varchar = 'offline' THEN last_seen_at ELSE NOW() END,
           updated_at = NOW() WHERE id = $1`,
         [
@@ -21,9 +23,9 @@ export async function ingestCollectorBatch(payload) {
           metric.status,
           metric.cpuPercent ?? null,
           metric.memoryPercent ?? null,
-          metric.trafficMbps ?? 0,
+          metric.trafficMbps ?? null,
           metric.latencyMs ?? null,
-          metric.uptimeSeconds ?? 0
+          metric.uptimeSeconds ?? null
         ]
       );
       updatedDevices += 1;

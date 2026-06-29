@@ -7,3 +7,6 @@ coverage/
 .DS_Store
 Thumbs.db
 data/
+.env.standalone
+backups/
+test-*.js

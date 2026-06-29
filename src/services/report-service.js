@@ -117,6 +117,14 @@ export async function markReportAsRun(reportId) {
 }
 
 export async function getSLAReport(groupId, startDate, endDate) {
+  const values = [];
+  let groupCondition = "";
+  if (groupId) {
+    values.push(groupId);
+    groupCondition = `AND sp.device_group_id = $${values.length}`;
+  }
+
+  values.push(startDate, endDate);
   const result = await pool.query(
     `SELECT sh.month_year, sp.name as policy_name, d.name as device_name,
             sh.target_uptime_percent, sh.actual_uptime_percent,
@@ -124,15 +132,25 @@ export async function getSLAReport(groupId, startDate, endDate) {
      FROM sla_history sh
      JOIN sla_policies sp ON sp.id = sh.policy_id
      LEFT JOIN devices d ON d.id = sh.device_id
-     WHERE sp.device_group_id = $1
-     AND sh.month_year BETWEEN $2 AND $3
+     WHERE sh.month_year BETWEEN $${values.length - 1} AND $${values.length} ${groupCondition}
      ORDER BY sh.month_year DESC, sp.name, d.name`,
-    [groupId, startDate, endDate]
+    values
   );
   return result.rows;
 }
 
 export async function getUptimeReport(groupId, startDate, endDate) {
+  const values = [];
+  let joinCondition = "";
+  let groupCondition = "";
+
+  if (groupId) {
+    values.push(groupId);
+    joinCondition = `LEFT JOIN device_group_members dgm ON dgm.device_id = d.id`;
+    groupCondition = `AND dgm.group_id = $${values.length}`;
+  }
+
+  values.push(startDate, endDate);
   const result = await pool.query(
     `SELECT d.id, d.name, d.type,
             COUNT(*) FILTER (WHERE a.status = 'resolved') as incidents,
@@ -140,12 +158,11 @@ export async function getUptimeReport(groupId, startDate, endDate) {
               FILTER (WHERE a.status = 'resolved') as total_downtime_seconds
      FROM devices d
      LEFT JOIN alerts a ON a.device_id = d.id
-     LEFT JOIN device_group_members dgm ON dgm.device_id = d.id
-     WHERE dgm.group_id = $1
-     AND a.created_at BETWEEN $2 AND $3
+     ${joinCondition}
+     WHERE a.created_at BETWEEN $${values.length - 1} AND $${values.length} ${groupCondition}
      GROUP BY d.id, d.name, d.type
      ORDER BY d.name`,
-    [groupId, startDate, endDate]
+    values
   );
   return result.rows;
 }
